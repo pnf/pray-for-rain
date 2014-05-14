@@ -1,0 +1,96 @@
+{--
+
+Note that simpleHttp and simpleHTTP are not the same!
+simpleHTTP
+  :: HStream ty =>
+     Network.HTTP.Request ty
+     -> IO (Network.Stream.Result (Network.HTTP.Response ty))
+simpleHttp
+  :: Control.Monad.IO.Class.MonadIO m => String -> m C.ByteString
+
+rspCode :: Network.HTTP.Response a -> ResponseCode
+getRequest :: String -> Request_String
+
+fmap (fmap rspCode) (simpleHTTP $ getRequest "http://api.zippopotam.us/us/10011")
+for (fmap rspCode) <$>  (simpleHTTP $ getRequest "http://api.zippopotam.us/us/10011")
+==> Right (2,0,0)
+
+downloadCSVFile ::String-> IO (Bool,String)
+downloadCSVFile company_code=do 
+                             let a="http://ichart.finance.yahoo.com/table.csv?s=" ++ company_code
+                             let b=simpleHTTP $  getRequest a 
+                             src <- ( b >>= getResponseBody)
+                             rcode <- fmap rspCode <$> b
+                             case rcode of
+                                     Right (2,_,_) -> return (True,src)
+                                     Right (4,_,_) -> return  (False,"Invalid URL..")
+                                     Right (5,_,_) -> return  (False, "Server Error") 
+
+ParseSoup
+liftM parseTags $ simpleHttp "http://www.phaster.com/zip_code.html"
+(~==) :: (Text.StringLike.StringLike str, TagRep t) =>  Tag str -> t -> Bool -- inexact match
+(~/=) :: (Text.StringLike.StringLike str, TagRep t) =>  Tag str -> t -> Bool -- negation of 
+
+
+Text.XML.Cursor and Text.HTML.DOM
+element :: xml-types-0.3.4:Data.XML.Types.Name -> Text.XML.Cursor.Axis
+
+type Axis - Cursor -> [Cursor]
+An Axis, in its simplest form, takes a Cursor and returns a list of
+Cursors. It is used for selections, such as finding children,
+ancestors, etc. Axes can be chained together to express complex rules,
+such as all children named foo.
+
+Axes can be composed with >=>, where e.g. f >=> g means that on all
+results of the f axis, the g axis will be applied, and all results
+joined together. Because Axis is just a type synonym for Cursor ->
+[Cursor], it is possible to use other standard functions like >>= or
+concatMap similarly.
+
+The operators &|, &/, &// and &.// can be used to combine axes so that
+the second axis works on the context nodes, children, descendants,
+respectively the context node as well as its descendants of the
+results of the first axis.
+
+The operators $|, $/, $// and $.// can be used to apply an axis
+(right-hand side) to a cursor so that it is applied on the cursor
+itself, its children, its descendants, respectively itself and its
+descendants.
+
+
+Apply an axis to descendents, like // in XPath, selects all nodes in cursor matching a Cursor -> [Cursor]
+($//) :: Text.XML.Cursor.Generic.Cursor node -> (Text.XML.Cursor.Generic.Cursor node -> [a]) -> [a]
+
+
+
+Apply function to result of axis
+(&|)  :: (Text.XML.Cursor.Generic.Cursor node -> [a]) -> (a -> b) -> Text.XML.Cursor.Generic.Cursor node -> [b]
+
+liftM (fromDocument . parseLBS) $ simpleHttp "http://www.phaster.com/zip_code.html"
+  :: Control.Monad.IO.Class.MonadIO m => m Cursor
+
+
+
+--}
+
+{--  
+
+  zips <- parseZips
+  zrand <- R.randomRIO (0 :: Int, length zips :: Int) :: Int
+  print zrand
+
+
+  let url = "http://api.wunderground.com/api/fdbe061bc411ad6b/forecast/q/NY/10011.json"
+  d <- (eitherDecode <$> simpleHttp url) :: IO (Either String WUResponse)
+  case d of
+    Left err -> putStrLn err
+    Right wur -> print wur
+l
+--  resp <- simpleHttp url
+--  decodeWUResponse resp >>= (DBLC.putStrLn . show)
+  --bleh <- decodeWUResponse resp
+  -- return bleh
+--  
+
+--}
+

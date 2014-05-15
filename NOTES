@@ -106,3 +106,7 @@ instance Monad m => Monad (ET m e) where
     case result of
       Left x -> return $ Left x
       Right x -> runET (f x)
+
+--dialaprayer = "88202"
+--dialaprayer = "+19179404223"
+

@@ -18,7 +18,6 @@ import qualified Data.Char as C
 
 import  Text.Regex.Posix
 
-
 data WUResponse = WUResponse  { 
       forecast :: Forecast
     } deriving (Eq,Show,Generic)
@@ -40,7 +39,6 @@ data ForecastDay = ForecastDay {
 
 
 -- "{\"forecast\" : {\"txt_forecast\" :{\"date\" : \"cegodnya\", \"forecastday\" : [{\"period\" : 0, \"icon\" : \"sun\"}]}}}"
-
 -- (.:) :: FromJSON a => Object -> T.Text -> Parser a
 
 instance FromJSON WUResponse where
@@ -88,6 +86,4 @@ summarize fc =
       rain = s1 =~ ("thunderstorm|rain|shower|cloud|overcast" :: String) :: Bool
   in
       (rain,s1)
-
-  
   

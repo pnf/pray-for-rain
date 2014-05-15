@@ -40,10 +40,9 @@ prayFor config zip = try $ do
       loc <- location zip
       let mytown = town loc
       let (rain,sum) = summarize fc
-      let txt = "They're saying " ++ sum ++ " in " ++ mytown ++ ". Please pray for " ++ (if rain then "sun." else "rain.")
+      let txt = "They're saying " ++ sum ++ " in " ++ mytown ++ ". Please pray for " ++
+                (if rain then "sun." else "rain.")
       return txt
---dialaprayer = "88202"
---dialaprayer = "+19179404223"
 
 main = do
   args <- getArgs

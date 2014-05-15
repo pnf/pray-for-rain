@@ -2,8 +2,6 @@
 
 module Pray.Zips (getZips,location,readZips,town) where
 
---import Pray.Regex
-
 import qualified Data.Text as T
 import  Text.Regex.Posix
 import qualified  Data.Vector as V
@@ -36,6 +34,7 @@ instance FromJSON Place where
 
 
 -- The explicit :: String seems to be necessary when OverloadedStrings is set
+-- "12345" -> 12345;  "12345 thru 12349" -> [12345,12346,12347,12348,12349]
 zipRange :: String -> V.Vector String
 zipRange cell = if cell == "\160" then V.empty else
   let zss = (cell :: String) =~  ("[1-9][0-9]{4}" :: String) :: [[String]]
@@ -45,7 +44,7 @@ zipRange cell = if cell == "\160" then V.empty else
         [a,b] -> V.fromList $ fmap show [a..b]
         _ -> V.empty
 
-
+-- Get valid zip codes from a friendly purveyor
 getZips :: IO (V.Vector String)
 getZips = do
   let url = "http://www.phaster.com/zip_code.html"
@@ -75,6 +74,7 @@ location zip = do
   resp <- simpleHttp uri
   eitherDecode <$> simpleHttp uri
 
+-- Find a random town
 town :: (Either String ZipLoc) -> String
 town loc = case loc of
   Right (ZipLoc _ ((Place c s):_)) -> c ++ ", " ++ s

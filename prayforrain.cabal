@@ -18,7 +18,8 @@ cabal-version:       >=1.10
 library
   exposed-modules:    Pray.Zips,
                       Pray.Forecast,
-                      Pray.Main
+                      Pray.Main,
+                      Pray.Twilio
 
   build-depends:       vector >= 0.10.0.1,
                        regex-base >= 0.93.2,
@@ -29,6 +30,7 @@ library
                ,       http-conduit >= 1.2.1
                ,       http-client-tls
                ,       transformers
+               ,       either
                ,       bytestring ==0.10.*
                ,       conduit > 1.0
                ,       xml-conduit

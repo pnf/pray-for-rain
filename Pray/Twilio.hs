@@ -6,7 +6,7 @@
               RankNTypes,
               PatternGuards #-}
 
-module Pray.Twilio (sendMessage, getMessages) where
+module Pray.Twilio (sendMessage, getMessages,twilioAgent,Agent) where
 
 import Network.HTTP.Conduit -- the main module
 --import Network.HTTP.Client (defaultManagerSettings)
@@ -18,13 +18,12 @@ import           Data.Aeson
 import           Control.Applicative
 import           Control.Monad
 import Control.Monad.IO.Class (liftIO)
+import Control.Exception
 import qualified Data.Text as T
 import qualified Data.Char as C
 import Data.Maybe
 import Data.ByteString (ByteString)
 import Data.ByteString.Char8 (pack,unpack)
-
-
 
 data Agent = Agent {
   manager :: Manager,
@@ -41,7 +40,7 @@ twilioAgent = do
   let baseUrl = "https://api.twilio.com/2010-04-01/Accounts/"
   urlReq <- parseUrl $ baseUrl ++ unpack acct ++ "/Messages.json"
   let req = applyBasicAuth acct auth urlReq
-  print (urlReq,req,num,acct,auth)
+  -- print (urlReq,req,num,acct,auth)
   manager <- newManager tlsManagerSettings
   return $ Agent manager req num acct auth
 
@@ -52,17 +51,10 @@ getMessages = "bye"
 toBS :: [(String,String)] -> [(ByteString,ByteString)]
 toBS = fmap $ \ (s1,s2) -> (pack s1, pack s2)
 
-sendMessage :: Agent -> String -> String -> IO ()
+sendMessage :: Agent -> String -> String -> IO (Either SomeException String)
 sendMessage agent to msg = do
   let req = urlEncodedBody  [("To",pack to),
                              ("From", (fromNum agent)),
                              ("Body", pack msg)]  (smsReq agent)
-  print req
-  withManager $ \m -> (print . responseBody) <$> httpLbs req m
-  print "ha"
-  
---  res <- httpLbs req (manager agent)
---  print res
+  try $ withManager $ \m -> (show . responseBody) <$> httpLbs req m
 
--- QUM0ODk3YjE4OWQxYjBjNzBmNTRjNDBiYjhmMmRjYWU3NDpmNDcyMzFhMDM1MzVjYzYyODQ0MGQwODYwMGJjMWRiNQ==
--- QUM0ODk3YjE4OWQxYjBjNzBmNTRjNDBiYjhmMmRjYWU3NDpmNDcyMzFhMDM1MzVjYzYyODQ0MGQwODYwMGJjMWQ1Yg==

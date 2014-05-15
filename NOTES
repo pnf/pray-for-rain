@@ -91,3 +91,18 @@ liftM (fromDocument . parseLBS) $ simpleHttp "http://www.phaster.com/zip_code.ht
 
 #+END_SRC
 
+
+doubleBind :: (Either a b) -> (b -> IO (Either a c)) -> IO (Either a c)
+doubleBind e f = case e of
+  Left l -> return (Left l)
+  Right r -> f r
+newtype ET m e a = ET {
+   runET :: m (Either e a)
+}
+instance Monad m => Monad (ET m e) where
+  return x = ET (return (Right x))
+  ET action >>= f = ET $ do
+    result <- action
+    case result of
+      Left x -> return $ Left x
+      Right x -> runET (f x)

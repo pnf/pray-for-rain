@@ -1,20 +1,19 @@
-{--
+-*- org -*-
 
-Note that simpleHttp and simpleHTTP are not the same!
+* Note that simpleHttp and simpleHTTP are not the same!
 simpleHTTP
   :: HStream ty =>
      Network.HTTP.Request ty
      -> IO (Network.Stream.Result (Network.HTTP.Response ty))
 simpleHttp
   :: Control.Monad.IO.Class.MonadIO m => String -> m C.ByteString
-
 rspCode :: Network.HTTP.Response a -> ResponseCode
 getRequest :: String -> Request_String
-
 fmap (fmap rspCode) (simpleHTTP $ getRequest "http://api.zippopotam.us/us/10011")
 for (fmap rspCode) <$>  (simpleHTTP $ getRequest "http://api.zippopotam.us/us/10011")
 ==> Right (2,0,0)
 
+Example with SimpleHTTP, checking response codes.
 downloadCSVFile ::String-> IO (Bool,String)
 downloadCSVFile company_code=do 
                              let a="http://ichart.finance.yahoo.com/table.csv?s=" ++ company_code
@@ -26,13 +25,16 @@ downloadCSVFile company_code=do
                                      Right (4,_,_) -> return  (False,"Invalid URL..")
                                      Right (5,_,_) -> return  (False, "Server Error") 
 
-ParseSoup
+
+* XML/HTML parsing
+
+** ParseSoup
 liftM parseTags $ simpleHttp "http://www.phaster.com/zip_code.html"
 (~==) :: (Text.StringLike.StringLike str, TagRep t) =>  Tag str -> t -> Bool -- inexact match
 (~/=) :: (Text.StringLike.StringLike str, TagRep t) =>  Tag str -> t -> Bool -- negation of 
 
 
-Text.XML.Cursor and Text.HTML.DOM
+** Text.XML.Cursor and Text.HTML.DOM
 element :: xml-types-0.3.4:Data.XML.Types.Name -> Text.XML.Cursor.Axis
 
 type Axis - Cursor -> [Cursor]
@@ -57,11 +59,8 @@ The operators $|, $/, $// and $.// can be used to apply an axis
 itself, its children, its descendants, respectively itself and its
 descendants.
 
-
 Apply an axis to descendents, like // in XPath, selects all nodes in cursor matching a Cursor -> [Cursor]
 ($//) :: Text.XML.Cursor.Generic.Cursor node -> (Text.XML.Cursor.Generic.Cursor node -> [a]) -> [a]
-
-
 
 Apply function to result of axis
 (&|)  :: (Text.XML.Cursor.Generic.Cursor node -> [a]) -> (a -> b) -> Text.XML.Cursor.Generic.Cursor node -> [b]
@@ -69,11 +68,9 @@ Apply function to result of axis
 liftM (fromDocument . parseLBS) $ simpleHttp "http://www.phaster.com/zip_code.html"
   :: Control.Monad.IO.Class.MonadIO m => m Cursor
 
+* Scratch
 
-
---}
-
-{--  
+#+BEGIN_SRC haskell
 
   zips <- parseZips
   zrand <- R.randomRIO (0 :: Int, length zips :: Int) :: Int
@@ -85,12 +82,12 @@ liftM (fromDocument . parseLBS) $ simpleHttp "http://www.phaster.com/zip_code.ht
   case d of
     Left err -> putStrLn err
     Right wur -> print wur
-l
---  resp <- simpleHttp url
---  decodeWUResponse resp >>= (DBLC.putStrLn . show)
-  --bleh <- decodeWUResponse resp
-  -- return bleh
---  
 
---}
+  resp <- simpleHttp url
+  decodeWUResponse resp >>= (DBLC.putStrLn . show)
+  bleh <- decodeWUResponse resp
+  return bleh
+
+
+#+END_SRC
 

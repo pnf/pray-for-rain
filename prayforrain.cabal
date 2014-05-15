@@ -24,19 +24,21 @@ library
                        regex-base >= 0.93.2,
                        base >=4.6 && <4.7
                ,       aeson
+               ,       curl
                ,       parsec
-               ,       http-conduit
-               ,       http-types
+               ,       http-conduit >= 1.2.1
+               ,       http-client-tls
                ,       transformers
-               ,       bytestring
+               ,       bytestring ==0.10.*
                ,       conduit > 1.0
                ,       xml-conduit
                ,       html-conduit
-               ,       text
+               ,       text >= 0.11.3.1
                ,       unordered-containers
                ,       random
                ,       HTTP
                ,       regex-posix
+               ,       utf8-string
 
 
 executable  cli

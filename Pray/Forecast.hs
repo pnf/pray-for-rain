@@ -74,9 +74,9 @@ instance FromJSON ForecastDay  --where
 extractIcon :: WUResponse -> String
 extractIcon wur = T.unpack $ fcttext $ (!! 1)  $ forecastDays  $ textForecast $ forecast wur
 
-getForecast :: String -> IO String
-getForecast zip = do
-  let url = "http://api.wunderground.com/api/fdbe061bc411ad6b/forecast/q/NY/" ++ zip ++ ".json"
+getForecast :: String -> String -> IO String
+getForecast apikey zip = do
+  let url = "http://api.wunderground.com/api/" ++ apikey ++ "/forecast/q/NY/" ++ zip ++ ".json"
   d <- (eitherDecode <$> simpleHttp url) :: IO (Either String WUResponse)
   case d of
     Left err -> return $ err

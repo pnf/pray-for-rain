@@ -1,13 +1,20 @@
 Pray for Rain
 ===
 
-Attempt to do something non-academic, but nonetheless pointless, using Haskell.
+Haskell is fun, but I haven't actually made it **do** anything.
+
+
+
+Attempt to make something non-academic, but nonetheless pointless, using Haskell.
+
 
 
 I.e. a program that interacts with the world in some way.
 
 
+
 But doesn't ignore the spiritual realm either:
+
 
 
 ![alt text](poster.jpg)

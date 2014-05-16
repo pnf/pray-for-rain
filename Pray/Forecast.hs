@@ -8,6 +8,8 @@
 
 module Pray.Forecast (getForecast,summarize) where
 
+import Control.Monad.Trans.Either
+import Control.Exception
 import Network.HTTP.Conduit -- the main module
 import GHC.Generics
 import           Data.Aeson
@@ -15,6 +17,9 @@ import           Control.Applicative
 import           Control.Monad
 import qualified Data.Text as T
 import qualified Data.Char as C
+--import Data.ByteString.Char8 (ByteString)
+import Data.ByteString.Lazy.Char8 (ByteString)
+-- import qualified Data.ByteString.Lazy.Internal.ByteString as DBLIB
 
 import  Text.Regex.Posix
 
@@ -72,13 +77,28 @@ instance FromJSON ForecastDay  --where
 extractIcon :: WUResponse -> String
 extractIcon wur = T.unpack $ fcttext $ (!! 1)  $ forecastDays  $ textForecast $ forecast wur
 
-getForecast :: String -> String -> IO String
-getForecast apikey zip = do
+-- The EitherT transformers seem to expect that the left clause doesnt change type
+eitherSimpleHttp :: String -> IO (Either String ByteString)
+eitherSimpleHttp url = do
+  eitherResp <- try $ simpleHttp url :: IO (Either SomeException ByteString)
+  return $ case eitherResp of
+    Left e -> Left $ show e
+    Right b -> Right b
+
+getForecast :: String -> String -> IO (Either String String)
+getForecast apikey zip = runEitherT $ do
   let url = "http://api.wunderground.com/api/" ++ apikey ++ "/forecast/q/NY/" ++ zip ++ ".json"
-  d <- (eitherDecode <$> simpleHttp url) :: IO (Either String WUResponse)
-  case d of
-    Left err -> return $ err
-    Right wur -> return $ extractIcon $  wur
+  resp <- EitherT $ eitherSimpleHttp url
+  wur <- hoistEither $ eitherDecode resp
+  return $ extractIcon wur
+
+getForecast2 :: String -> String -> IO (Either String String)
+getForecast2 apikey zip = runEitherT $ do
+  let url = "http://api.wunderground.com/api/" ++ apikey ++ "/forecast/q/NY/" ++ zip ++ ".json"
+  let respe = EitherT $ try $ simpleHttp url :: EitherT (SomeException) (IO) ByteString
+  resp <- bimapEitherT show id $ respe
+  wur <- hoistEither $ eitherDecode resp
+  return $ extractIcon wur
 
 summarize :: String -> (Bool,String)
 summarize fc =

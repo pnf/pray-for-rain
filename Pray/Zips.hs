@@ -18,7 +18,7 @@ import Control.Applicative
 import Control.Monad
 
 
-data ZipLoc = ZipLoc {zip :: String, places :: [Place]} deriving (Eq,Show)
+data ZipLoc = ZipLoc {zipcode :: String, places :: [Place]} deriving (Eq,Show)
 data Place =  Place  {city :: String, state :: String} deriving (Eq,Show)
 
 instance FromJSON ZipLoc where
@@ -74,13 +74,10 @@ location zip = do
   resp <- simpleHttp uri
   eitherDecode <$> simpleHttp uri
 
--- Find a random town
-town :: (Either String ZipLoc) -> String
-town loc = case loc of
-  Right (ZipLoc _ ((Place c s):_)) -> c ++ ", " ++ s
-  _ -> "My town"
-
-
-
+-- Get name of town
+town :: ZipLoc -> Either String String
+town loc = case (places loc) of
+  (Place c s):_ -> Right $ c ++ ", " ++ s
+  _ -> Left $ "No towns listed for " ++ show (zipcode loc)
 
 -- &| (!! 2) $// content

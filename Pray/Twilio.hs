@@ -12,6 +12,7 @@ import Network.HTTP.Conduit -- the main module
 --import Network.HTTP.Client (defaultManagerSettings)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
 import Data.Conduit
+import Control.Monad.Trans.Either
 
 import GHC.Generics
 import           Data.Aeson
@@ -51,10 +52,11 @@ getMessages = "bye"
 toBS :: [(String,String)] -> [(ByteString,ByteString)]
 toBS = fmap $ \ (s1,s2) -> (pack s1, pack s2)
 
-sendMessage :: Agent -> String -> String -> IO (Either SomeException String)
-sendMessage agent to msg = do
+sendMessage :: Agent -> String -> String -> IO (Either String String)
+sendMessage agent to msg = runEitherT $ do
   let req = urlEncodedBody  [("To",pack to),
                              ("From", (fromNum agent)),
                              ("Body", pack msg)]  (smsReq agent)
-  try $ withManager $ \m -> (show . responseBody) <$> httpLbs req m
-
+  let respE = (EitherT $ try $ withManager $ \m -> (show . responseBody) <$> httpLbs req m)  :: EitherT (SomeException) (IO) String
+  resp <- bimapEitherT show show $ respE
+  return resp

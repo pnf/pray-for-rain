@@ -34,11 +34,11 @@ getConfig args = do
   return $ Config zips wuApiKey tAcct tApiKey tAgent phoneNumber (read maxIterS) (read periodS)
 
 
-prayFor :: Config -> String -> IO (Either SomeException String)
-prayFor config zip = try $ do
-      fc <- getForecast (wuApiKey config) zip
-      loc <- location zip
-      let mytown = town loc
+prayFor :: Config -> String -> IO (Either String String)
+prayFor config zip = runEitherT $ do
+      fc <-  EitherT $ getForecast (wuApiKey config) zip
+      loc <- EitherT $ location zip
+      mytown <- hoistEither $ town loc
       let (rain,sum) = summarize fc
       let txt = "They're saying " ++ sum ++ " in " ++ mytown ++ ". Please pray for " ++
                 (if rain then "sun." else "rain.")
@@ -55,8 +55,8 @@ main = do
       i <- R.randomRIO (0 :: Int, n-1)
       let zip = (zips config) V.! i
       res <- runEitherT $ do
-         prayer <- EitherT $  prayFor config zip -- IO (Either SomeException String)
-         sms <- EitherT $ T.sendMessage (twilioAgent config) (phoneNumber config)  prayer
+         prayer <- EitherT $  prayFor config zip
+         sms <- EitherT $ T.sendMessage (twilioAgent config) (phoneNumber config) ("wwpray " ++ prayer)
          return $ "Sent: " ++ prayer
       case res of
         Left e -> print $ "Ignoring exception: " ++ show e
